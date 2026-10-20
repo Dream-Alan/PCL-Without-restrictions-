@@ -13,6 +13,7 @@ Public Class FormMain
         If BuildType = BuildTypes.Release Then
             If LastVersion < 413 Then 'Release 2.99.0.0
                 FeatureList.Add(New KeyValuePair(Of Integer, String)(5, "恢复：MC 游戏文件下载功能"))
+                FeatureList.Add(New KeyValuePair(Of Integer, String)(2, "调整：缓存文件夹默认位置改为 %LOCALAPPDATA%\PCL，无需管理员权限"))
             End If
             If LastVersion < 411 Then 'Release 2.14.0.0
                 FeatureList.Add(New KeyValuePair(Of Integer, String)(4, "新增：允许修改、添加、移除、更新已安装版本的各个组件，可从版本设置中进入"))
@@ -105,6 +106,7 @@ Public Class FormMain
             '1：BUG-
             If LastVersion < 414 Then 'Snapshot 2.99.0.0
                 FeatureList.Add(New KeyValuePair(Of Integer, String)(5, "恢复：MC 游戏文件下载功能"))
+                FeatureList.Add(New KeyValuePair(Of Integer, String)(2, "调整：缓存文件夹默认位置改为 %LOCALAPPDATA%\PCL，无需管理员权限"))
             End If
             If LastVersion < 412 Then 'Snapshot 2.14.0.0
                 FeatureList.Add(New KeyValuePair(Of Integer, String)(4, "新增：允许修改、添加、移除、更新已安装版本的各个组件，可从版本设置中进入"))

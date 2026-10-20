@@ -45,9 +45,18 @@ Public Module ModBase
     ''' </summary>
     Public PathImage As String = "pack://application:,,,/Plain Craft Launcher 2;component/Images/"
     ''' <summary>
+    ''' 默认缓存文件夹路径，以 \ 结尾。
+    ''' 使用用户目录（%LOCALAPPDATA%\PCL\）而不是 %TEMP%，既不会被系统或清理软件随时删除，也不需要任何特殊权限。
+    ''' </summary>
+    Public Function GetDefaultCachePath() As String
+        Dim AppData As String = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
+        If String.IsNullOrEmpty(AppData) Then AppData = Path.GetTempPath() '极端情况下回退到临时目录
+        Return PathUtils.AddSlashSuffix($"{AppData}\PCL\")
+    End Function
+    ''' <summary>
     ''' 程序的缓存文件夹路径，以 \ 结尾。
     ''' </summary>
-    Public PathTemp As String = PathUtils.AddSlashSuffix(If(Settings.Get(Of String)("SystemSystemCache") = "", Path.GetTempPath() & "PCL\", Settings.Get(Of String)("SystemSystemCache")).Replace("/", "\"))
+    Public PathTemp As String = PathUtils.AddSlashSuffix(If(Settings.Get(Of String)("SystemSystemCache") = "", GetDefaultCachePath(), Settings.Get(Of String)("SystemSystemCache")).Replace("/", "\"))
     ''' <summary>
     ''' 当前程序的语言。
     ''' </summary>
