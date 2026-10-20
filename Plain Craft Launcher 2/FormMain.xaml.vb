@@ -12,7 +12,7 @@ Public Class FormMain
         '统计更新日志条目
         If BuildType = BuildTypes.Release Then
             If LastVersion < 413 Then 'Release 2.99.0.0
-                FeatureList.Add(New KeyValuePair(Of Integer, String)(5, "删除：为遵守相关法律法规，PCL 暂时不再提供 MC 下载功能，非常抱歉 qwq……"))
+                FeatureList.Add(New KeyValuePair(Of Integer, String)(5, "恢复：MC 游戏文件下载功能"))
             End If
             If LastVersion < 411 Then 'Release 2.14.0.0
                 FeatureList.Add(New KeyValuePair(Of Integer, String)(4, "新增：允许修改、添加、移除、更新已安装版本的各个组件，可从版本设置中进入"))
@@ -104,7 +104,7 @@ Public Class FormMain
             '2：BUG* IMP-
             '1：BUG-
             If LastVersion < 414 Then 'Snapshot 2.99.0.0
-                FeatureList.Add(New KeyValuePair(Of Integer, String)(5, "删除：为遵守相关法律法规，PCL 暂时不再提供 MC 下载功能，非常抱歉 qwq……"))
+                FeatureList.Add(New KeyValuePair(Of Integer, String)(5, "恢复：MC 游戏文件下载功能"))
             End If
             If LastVersion < 412 Then 'Snapshot 2.14.0.0
                 FeatureList.Add(New KeyValuePair(Of Integer, String)(4, "新增：允许修改、添加、移除、更新已安装版本的各个组件，可从版本设置中进入"))
@@ -1076,10 +1076,6 @@ Public Class FormMain
                     RunInUi(Sub() FrmMain.PageChange(FormMain.PageType.TaskManager))
                     Return
                 Catch ex As Exception
-                    If RestrictMcDownload AndAlso ex.Message = "为遵守相关法律法规，PCL 暂时不再提供 MC 下载功能，非常抱歉 qwq……" Then
-                        Hint(ex.Message, HintType.Red)
-                        Return
-                    End If
                     If ex.IsCanceled Then Return
                     '安装失败，继续往后尝试
                 End Try
