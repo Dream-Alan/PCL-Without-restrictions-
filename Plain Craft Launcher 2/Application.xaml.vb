@@ -11,7 +11,7 @@ Public Class Application
             MeloongCore.Wpf.Main.Init()
             If Not (e.Args.Contains("--update") OrElse e.Args.Contains("--gpu") OrElse e.Args.Contains("--memory")) Then '若是通过命令行调用，则不检查单例、不轮换日志（#9137）
                 WaitingMutex(e)
-                Logger.Instance = New PclLogger With {.logFolder = Paths.BaseThenName, .MinLevel = If(ModeDebug, LogLevel.Trace, LogLevel.Info)}
+                Logger.Instance = New PclLogger With {.logFolder = PathData, .MinLevel = If(ModeDebug, LogLevel.Trace, LogLevel.Info)}
             End If
             '提升主线程优先级
             Thread.CurrentThread.Priority = ThreadPriority.Highest
@@ -68,17 +68,14 @@ Public Class Application
             End If
             '初始化文件结构
             Try
-                DirectoryUtils.Create(Paths.Base & "PCL\Pictures\")
-                DirectoryUtils.Create(Paths.Base & "PCL\Musics\")
-                CheckPermissionWithException(Paths.Base & "PCL\")
+                DirectoryUtils.Create(PathData & "Pictures\")
+                DirectoryUtils.Create(PathData & "Musics\")
             Catch ex As Exception
-                MsgBox($"PCL 没有对当前文件夹的权限（{Paths.Base}PCL\），请尝试：" & vbCrLf &
-                  "1. 将 PCL 移动到其他文件夹" & If(PathUtils.GetDiskName(Paths.Base) = "C"c, "，例如 C 盘和桌面以外的其他位置。", "。") & vbCrLf &
-                  "2. 删除当前目录中的 PCL 文件夹，然后再试。" & vbCrLf &
-                  "3. 右键 PCL 选择属性，打开 兼容性 中的 以管理员身份运行此程序。",
-                MsgBoxStyle.Critical, "运行环境错误")
-                Environment.[Exit](ProcessReturnValues.Cancel)
+                Logger.Warn(ex, $"创建数据文件夹失败（{PathData}）")
             End Try
+            If Not PathUtils.IsSame(PathData, $"{Paths.Base}PCL\") Then
+                Logger.Info($"程序所在文件夹没有写入权限，配置、日志与自定义资源已改存到用户目录（{PathData}），无需以管理员身份运行 PCL。")
+            End If
 RetryCacheCheck:
             Try
                 DirectoryUtils.Create(PathTemp)

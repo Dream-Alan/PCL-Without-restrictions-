@@ -569,13 +569,13 @@ Public Class PageInstanceExport
             If BuildType = BuildTypes.Release AndAlso IncludePCL Then FileUtils.Copy(PathExe, CacheFolder & "Plain Craft Launcher.exe")
             '复制 PCL 个性化内容
             If IncludePCLCustom Then
-                If DirectoryUtils.Exists(Paths.Base & "PCL\Pictures\") Then DirectoryUtils.Copy(Paths.Base & "PCL\Pictures\", CacheFolder & "PCL\Pictures\")
-                If DirectoryUtils.Exists(Paths.Base & "PCL\Musics\") Then DirectoryUtils.Copy(Paths.Base & "PCL\Musics\", CacheFolder & "PCL\Musics\")
-                If DirectoryUtils.Exists(Paths.Base & "PCL\Help\") Then DirectoryUtils.Copy(Paths.Base & "PCL\Help\", CacheFolder & "PCL\Help\")
-                If FileUtils.Exists(Paths.Base & "PCL\Custom.xaml") Then FileUtils.Copy(Paths.Base & "PCL\Custom.xaml", CacheFolder & "PCL\Custom.xaml")
-                If FileUtils.Exists(Paths.Base & "PCL\Setup.ini") Then FileUtils.Copy(Paths.Base & "PCL\Setup.ini", CacheFolder & "PCL\Setup.ini")
-                If FileUtils.Exists(Paths.Base & "PCL\hints.txt") Then FileUtils.Copy(Paths.Base & "PCL\hints.txt", CacheFolder & "PCL\hints.txt")
-                If FileUtils.Exists(Paths.Base & "PCL\Logo.png") Then FileUtils.Copy(Paths.Base & "PCL\Logo.png", CacheFolder & "PCL\Logo.png")
+                If DirectoryUtils.Exists(PathData & "Pictures\") Then DirectoryUtils.Copy(PathData & "Pictures\", CacheFolder & "PCL\Pictures\")
+                If DirectoryUtils.Exists(PathData & "Musics\") Then DirectoryUtils.Copy(PathData & "Musics\", CacheFolder & "PCL\Musics\")
+                If DirectoryUtils.Exists(PathData & "Help\") Then DirectoryUtils.Copy(PathData & "Help\", CacheFolder & "PCL\Help\")
+                If FileUtils.Exists(PathData & "Custom.xaml") Then FileUtils.Copy(PathData & "Custom.xaml", CacheFolder & "PCL\Custom.xaml")
+                If FileUtils.Exists(PathData & "Setup.ini") Then FileUtils.Copy(PathData & "Setup.ini", CacheFolder & "PCL\Setup.ini")
+                If FileUtils.Exists(PathData & "hints.txt") Then FileUtils.Copy(PathData & "hints.txt", CacheFolder & "PCL\hints.txt")
+                If FileUtils.Exists(PathData & "Logo.png") Then FileUtils.Copy(PathData & "Logo.png", CacheFolder & "PCL\Logo.png")
             End If
         End Sub) With {.ProgressWeight = 5})
 

@@ -395,20 +395,20 @@ Public Class CustomEvent
         RelativeUrl = RelativeUrl.Replace("/", "\").Lower.TrimStart("\")
 
         '确认实际路径
-        Dim Location As String, WorkingDir As String = Paths.Base & "PCL"
+        Dim Location As String, WorkingDir As String = PathData
         HelpTryExtract()
         If RelativeUrl.Contains(":\") Then
             '绝对路径
             Location = RelativeUrl
             Logger.Info($"自定义事件中由绝对路径{Type}：{Location}")
-        ElseIf FileUtils.Exists(Paths.Base & "PCL\" & RelativeUrl) Then
+        ElseIf FileUtils.Exists(PathData & RelativeUrl) Then
             '相对 PCL 文件夹的路径
-            Location = Paths.Base & "PCL\" & RelativeUrl
+            Location = PathData & RelativeUrl
             Logger.Info($"自定义事件中由相对 PCL 文件夹的路径{Type}：{Location}")
-        ElseIf FileUtils.Exists(Paths.Base & "PCL\Help\" & RelativeUrl) Then
+        ElseIf FileUtils.Exists(PathData & "Help\" & RelativeUrl) Then
             '相对 PCL 本地帮助文件夹的路径
-            Location = Paths.Base & "PCL\Help\" & RelativeUrl
-            WorkingDir = Paths.Base & "PCL\Help\"
+            Location = PathData & "Help\" & RelativeUrl
+            WorkingDir = PathData & "Help\"
             Logger.Info($"自定义事件中由相对 PCL 本地帮助文件夹的路径{Type}：{Location}")
         ElseIf Type = EventType.打开帮助 AndAlso FileUtils.Exists(PathTemp & "Help\" & RelativeUrl) Then
             '相对 PCL 自带帮助文件夹的路径

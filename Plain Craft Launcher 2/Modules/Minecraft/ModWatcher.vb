@@ -370,7 +370,7 @@ Public Module ModWatcher
                     Analyzer.Prepare()
                     Analyzer.Analyze()
                     Analyzer.Output(False, New List(Of String) From
-                        {Instance.PathVersion & Instance.Name & ".json", Paths.Base & "PCL\Log1.txt", Paths.Base & "PCL\LatestLaunch.bat"})
+                        {Instance.PathVersion & Instance.Name & ".json", PathData & "Log1.txt", PathData & "LatestLaunch.bat"})
                 Catch ex As Exception
                     Logger.Error(ex, "崩溃分析失败")
                 End Try

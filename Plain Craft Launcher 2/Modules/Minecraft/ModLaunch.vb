@@ -1933,7 +1933,7 @@ NextInstance:
                     McLaunchLog("该 Minecraft 版本不支持双层皮肤，已进行裁剪")
                     Skin = Skin.Clip(0, 0, 64, 32)
                 End If
-                Skin.Save(Paths.Base & "PCL\CustomSkin_Cliped.png")
+                Skin.Save(PathData & "CustomSkin_Cliped.png")
                 '构建压缩文件
                 Dim FilesToCompress As New Dictionary(Of String, String) From {
                     {"pack.mcmeta", MetaFileAddress}, {"pack.png", PackPicAddress}}
@@ -1942,15 +1942,15 @@ NextInstance:
                     For Each SkinName In {"alex", "ari", "efe", "kai", "makena", "noor", "steve", "sunny", "zuri"}
                         FilesToCompress.Add(
                                 $"assets/minecraft/textures/entity/player/{If(Settings.Get(Of Boolean)("LaunchSkinSlim"), "slim", "wide")}/{SkinName}.png",
-                                Paths.Base & "PCL\CustomSkin_Cliped.png")
+                                PathData & "CustomSkin_Cliped.png")
                     Next
                 Else
                     FilesToCompress.Add(
                             $"assets/minecraft/textures/entity/{If(Settings.Get(Of Boolean)("LaunchSkinSlim"), "alex.png", "steve.png")}",
-                            Paths.Base & "PCL\CustomSkin_Cliped.png")
+                            PathData & "CustomSkin_Cliped.png")
                 End If
                 FileUtils.CreateZipFromFiles(ZipFileAddress, FilesToCompress)
-                FileUtils.Delete(Paths.Base & "PCL\CustomSkin_Cliped.png")
+                FileUtils.Delete(PathData & "CustomSkin_Cliped.png")
                 '更改设置文件
                 IniClearCache(SetupFileAddress)
                 Dim EnabledResourcePack As String = ReadIni(SetupFileAddress, "resourcePacks", "[]").TrimStart("[").TrimEnd("]")
@@ -2022,7 +2022,7 @@ IgnoreCustomSkin:
                 "echo 游戏已退出。" & vbCrLf &
                 "pause"
             FileUtils.Write(
-                filePath:=If(CurrentLaunchOptions.SaveBatch, Paths.Base & "PCL\LatestLaunch.bat"),
+                filePath:=If(CurrentLaunchOptions.SaveBatch, PathData & "LatestLaunch.bat"),
                 text:=FilterAccessToken(CmdString, "F").Replace("%", "%%"),
                 encoding:=McLaunchEncoding)
             If CurrentLaunchOptions.SaveBatch IsNot Nothing Then

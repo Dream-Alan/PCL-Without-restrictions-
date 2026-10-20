@@ -13,7 +13,8 @@ Public Class FormMain
         If BuildType = BuildTypes.Release Then
             If LastVersion < 413 Then 'Release 2.99.0.0
                 FeatureList.Add(New KeyValuePair(Of Integer, String)(5, "恢复：MC 游戏文件下载功能"))
-                FeatureList.Add(New KeyValuePair(Of Integer, String)(2, "调整：缓存文件夹默认位置改为 %LOCALAPPDATA%\PCL，无需管理员权限"))
+                FeatureList.Add(New KeyValuePair(Of Integer, String)(3, "调整：不需要管理员权限，数据与缓存文件夹不可写时自动改用用户目录"))
+                FeatureList.Add(New KeyValuePair(Of Integer, String)(2, "调整：缓存文件夹默认位置改为 %LOCALAPPDATA%\PCL"))
             End If
             If LastVersion < 411 Then 'Release 2.14.0.0
                 FeatureList.Add(New KeyValuePair(Of Integer, String)(4, "新增：允许修改、添加、移除、更新已安装版本的各个组件，可从版本设置中进入"))
@@ -106,7 +107,8 @@ Public Class FormMain
             '1：BUG-
             If LastVersion < 414 Then 'Snapshot 2.99.0.0
                 FeatureList.Add(New KeyValuePair(Of Integer, String)(5, "恢复：MC 游戏文件下载功能"))
-                FeatureList.Add(New KeyValuePair(Of Integer, String)(2, "调整：缓存文件夹默认位置改为 %LOCALAPPDATA%\PCL，无需管理员权限"))
+                FeatureList.Add(New KeyValuePair(Of Integer, String)(3, "调整：不需要管理员权限，数据与缓存文件夹不可写时自动改用用户目录"))
+                FeatureList.Add(New KeyValuePair(Of Integer, String)(2, "调整：缓存文件夹默认位置改为 %LOCALAPPDATA%\PCL"))
             End If
             If LastVersion < 412 Then 'Snapshot 2.14.0.0
                 FeatureList.Add(New KeyValuePair(Of Integer, String)(4, "新增：允许修改、添加、移除、更新已安装版本的各个组件，可从版本设置中进入"))
@@ -343,6 +345,8 @@ Public Class FormMain
         '模式提醒
         If BuildType = BuildTypes.Debug Then Hint("[开发者模式] PCL 正以开发者模式运行，这可能会造成严重的性能下降，请务必立即向开发者反馈此问题！", HintType.Red)
         If ModeDebug Then Hint("[调试模式] PCL 正以调试模式运行，这可能会导致性能下降，若无必要请不要开启！")
+        '数据文件夹回退提醒
+        If Not PathUtils.IsSame(PathData, $"{Paths.Base}PCL\") Then Hint($"程序所在文件夹无法写入，配置与日志已改存到 {PathData}", HintType.Blue)
         '尽早执行的加载池
         McFolderListLoader.Start(0) '为了让下载已存在文件检测可以正常运行，必须跑一次；为了让启动按钮尽快可用，需要尽早执行；为了与 PageLaunchLeft 联动，需要为 0 而不是 GetUuid
 
@@ -443,7 +447,7 @@ Public Class FormMain
             End Try
             '清理自动更新文件
             Try
-                FileUtils.Delete(Paths.Base & "PCL\Plain Craft Launcher 2.exe")
+                FileUtils.Delete(PathData & "Plain Craft Launcher 2.exe")
             Catch ex As Exception
                 Logger.Warn(ex, "清理自动更新文件失败")
             End Try
@@ -513,8 +517,8 @@ Public Class FormMain
                      "多谢各位的理解啦！", "重新解锁提醒")
         End If
         '移动自定义皮肤
-        If LastVersionCode <= 161 AndAlso FileUtils.Exists(Paths.Base & "PCL\CustomSkin.png") AndAlso Not FileUtils.Exists(Paths.AppDataThenName & "CustomSkin.png") Then
-            FileUtils.Copy(Paths.Base & "PCL\CustomSkin.png", Paths.AppDataThenName & "CustomSkin.png")
+        If LastVersionCode <= 161 AndAlso FileUtils.Exists(PathData & "CustomSkin.png") AndAlso Not FileUtils.Exists(Paths.AppDataThenName & "CustomSkin.png") Then
+            FileUtils.Copy(PathData & "CustomSkin.png", Paths.AppDataThenName & "CustomSkin.png")
             Logger.Info("已移动离线自定义皮肤 (162)")
         End If
         If LastVersionCode <= 263 AndAlso FileUtils.Exists(PathTemp & "CustomSkin.png") AndAlso Not FileUtils.Exists(Paths.AppDataThenName & "CustomSkin.png") Then
@@ -627,7 +631,7 @@ Public Class FormMain
                 FeedbackInfo()
                 Logger.Info("请在 https://github.com/Meloong-Git/PCL/issues 提交错误报告，以便于作者解决此问题！")
                 IsLogShown = True
-                StartProcess(Paths.Base & "PCL\Log1.txt")
+                StartProcess(PathData & "Log1.txt")
             End If
             Thread.Sleep(500) '防止 PCL 在记事本打开前就被掐掉
         End If
@@ -782,7 +786,7 @@ Public Class FormMain
                     FrmSetupUI.PanLogoChange.Visibility = Visibility.Visible
                 End If
                 Try
-                    ImageTitleLogo.Source = Paths.Base & "PCL\Logo.png"
+                    ImageTitleLogo.Source = PathData & "Logo.png"
                 Catch ex As Exception
                     ImageTitleLogo.Source = Nothing
                     Logger.Error(ex, "显示标题栏图片失败", LogBehavior.Alert)
@@ -1053,12 +1057,12 @@ Public Class FormMain
             Dim Extension As String = PathUtils.GetExtension(FilePath)
             If Extension = "xaml" Then
                 Logger.Info("文件后缀为 XAML，作为主页加载")
-                If FileUtils.Exists(Paths.Base & "PCL\Custom.xaml") Then
+                If FileUtils.Exists(PathData & "Custom.xaml") Then
                     If MyMsgBox("已存在一个主页文件，是否要将它覆盖？", "覆盖确认", "覆盖", "取消") = 2 Then
                         Return
                     End If
                 End If
-                FileUtils.Copy(FilePath, Paths.Base & "PCL\Custom.xaml")
+                FileUtils.Copy(FilePath, PathData & "Custom.xaml")
                 RunInUi(
                 Sub()
                     Settings.Set("UiCustomType", 1)

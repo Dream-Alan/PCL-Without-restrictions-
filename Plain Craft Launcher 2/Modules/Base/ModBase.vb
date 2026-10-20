@@ -45,13 +45,56 @@ Public Module ModBase
     ''' </summary>
     Public PathImage As String = "pack://application:,,,/Plain Craft Launcher 2;component/Images/"
     ''' <summary>
+    ''' 检查当前用户是否有某一文件夹的写入权限。文件夹不存在时会尝试创建。
+    ''' 该函数不调用 Logger，以便在模块初始化早期使用。
+    ''' </summary>
+    Public Function CanWriteFolder(Folder As String) As Boolean
+        Try
+            If String.IsNullOrWhiteSpace(Folder) Then Return False
+            Folder = PathUtils.AddSlashSuffix(Folder)
+            If Folder.EndsWithF(":\System Volume Information\", True) OrElse Folder.EndsWithF(":\$RECYCLE.BIN\", True) Then Return False
+            If Not IO.Directory.Exists(Folder) Then IO.Directory.CreateDirectory(Folder)
+            Dim Probe As String = Folder & "PCLProbe" & Guid.NewGuid().ToString("N") & ".tmp"
+            IO.File.WriteAllText(Probe, "临时文件，用于检测该文件夹的权限是否正常。")
+            IO.File.Delete(Probe)
+            Return True
+        Catch
+            Return False
+        End Try
+    End Function
+    ''' <summary>
     ''' 默认缓存文件夹路径，以 \ 结尾。
-    ''' 使用用户目录（%LOCALAPPDATA%\PCL\）而不是 %TEMP%，既不会被系统或清理软件随时删除，也不需要任何特殊权限。
+    ''' 依次尝试 %LOCALAPPDATA%\PCL\ 与 %TEMP%\PCL\，返回当前用户实际可写的那个，全程不需要管理员权限。
     ''' </summary>
     Public Function GetDefaultCachePath() As String
+        Dim Candidates As New List(Of String)
         Dim AppData As String = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
-        If String.IsNullOrEmpty(AppData) Then AppData = Path.GetTempPath() '极端情况下回退到临时目录
-        Return PathUtils.AddSlashSuffix($"{AppData}\PCL\")
+        If Not String.IsNullOrEmpty(AppData) Then Candidates.Add(PathUtils.AddSlashSuffix($"{AppData}\PCL\"))
+        Candidates.Add(PathUtils.AddSlashSuffix($"{Path.GetTempPath()}PCL\"))
+        For Each Candidate As String In Candidates
+            If CanWriteFolder(Candidate) Then Return Candidate
+        Next
+        Return Candidates(Candidates.Count - 1)
+    End Function
+    ''' <summary>
+    ''' 数据文件夹路径，以 \ 结尾，用于存放配置、日志、自定义图片与音乐等 PCL 自身文件。
+    ''' 优先使用程序所在目录的 PCL\；若当前用户没有写入权限（例如 PCL 被放在 Program Files 中），
+    ''' 则自动改用 %LOCALAPPDATA%\PCL\，因此不需要以管理员身份运行 PCL 也能正常使用。
+    ''' </summary>
+    Public PathData As String = GetWritableDataPath()
+    ''' <summary>
+    ''' 获取当前用户可写的数据文件夹路径，以 \ 结尾。
+    ''' </summary>
+    Public Function GetWritableDataPath() As String
+        Dim Candidates As New List(Of String) From {
+            $"{Paths.Base}PCL\",
+            $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\PCL\"
+        }
+        For Each Candidate As String In Candidates
+            If String.IsNullOrEmpty(Candidate) Then Continue For
+            If CanWriteFolder(Candidate) Then Return PathUtils.AddSlashSuffix(Candidate)
+        Next
+        Return PathUtils.AddSlashSuffix($"{Path.GetTempPath()}PCL\") '保底，几乎不会走到
     End Function
     ''' <summary>
     ''' 程序的缓存文件夹路径，以 \ 结尾。
@@ -482,7 +525,7 @@ Public Module ModBase
     ''' </summary>
     ''' <param name="FileName">文件完整路径或简写文件名。简写将会使用“ApplicationName\文件名.ini”作为路径。</param>
     Public Sub IniClearCache(FileName As String)
-        If Not FileName.Contains(":\") Then FileName = $"{Paths.Base}PCL\{FileName}.ini"
+        If Not FileName.Contains(":\") Then FileName = $"{PathData}{FileName}.ini"
         IniCache.Remove(FileName)
     End Sub
     ''' <summary>
@@ -493,7 +536,7 @@ Public Module ModBase
     Private Function IniGetContent(FileName As String) As ConcurrentDictionary(Of String, String)
         Try
             '还原文件路径
-            If Not FileName.Contains(":\") Then FileName = $"{Paths.Base}PCL\{FileName}.ini"
+            If Not FileName.Contains(":\") Then FileName = $"{PathData}{FileName}.ini"
             '检索缓存
             Dim Cache As ConcurrentDictionary(Of String, String) = Nothing
             If IniCache.TryGetValue(FileName, Cache) Then Return Cache
@@ -567,9 +610,9 @@ Public Module ModBase
                 FileContent.Append(Pair.Value)
                 FileContent.Append(vbCrLf)
             Next
-            If Not FileName.Contains(":\") Then FileName = $"{Paths.Base}PCL\{FileName}.ini"
+            If Not FileName.Contains(":\") Then FileName = $"{PathData}{FileName}.ini"
             '处理相对路径
-            FileName = If(FileName.Contains(":\"), FileName, Paths.Base & FileName)
+            FileName = If(FileName.Contains(":\"), FileName, PathData & FileName)
             FileUtils.Write(FileName, FileContent.ToString)
         Catch ex As Exception
             Logger.Error(ex, $"写入文件失败（{FileName} → {Key}:{Value}）", LogBehavior.Toast)
@@ -592,7 +635,7 @@ Public Module ModBase
             FileUtils.Delete(TestFilePath)
             Return True
         Catch ex As Exception
-            Logger.Warn(ex, $"没有对文件夹 {Folder} 的权限，请尝试以管理员权限运行 PCL")
+            Logger.Warn(ex, $"没有对文件夹 {Folder} 的权限")
             Return False
         End Try
     End Function
@@ -799,8 +842,8 @@ Public Module ModBase
     ''' </summary>
     Public PathPure As New Lazy(Of String)(
     Function()
-        If Paths.Base.IsAsciiOnly() Then
-            Return Paths.Base & "PCL\"
+        If PathData.IsAsciiOnly() Then
+            Return PathData
         ElseIf Paths.AppDataThenName.IsAsciiOnly() Then
             Return Paths.AppDataThenName
         ElseIf PathTemp.IsAsciiOnly() Then
